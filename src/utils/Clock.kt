@@ -2,7 +2,7 @@ package utils
 
 class Clock(
     private val gameEnvironment: GameEnvironment,
-    private val actionRetriver: ActionRetriver
+    private val actionRetriever: ActionRetriever
 ) {
     private var fps = 60
     private var frameTime = 1000f / fps
@@ -18,8 +18,8 @@ class Clock(
                 val deltaTime = elapsedTimeMs / 1000f
                 
                 // Process all queued actions before updating game state
-                while (actionRetriver.hasActions()) {
-                    val action = actionRetriver.getAction()
+                while (actionRetriever.hasActions()) {
+                    val action = actionRetriever.getAction()
                     gameEnvironment.onAction(action)
                 }
                 
