@@ -17,4 +17,12 @@ class Box(override var x: Float, override var y: Float, val value: Int): Sprite(
         2048 -> java.awt.Color(0xedc22e)
         else -> java.awt.Color(0xcdc1b4) // Default color for values > 2048
     }
+
+    fun moveLeft(distance: Float = 1f) {
+        x -= distance
+    }
+
+    fun moveRight(distance: Float = 1f) {
+        x += distance
+    }
 }

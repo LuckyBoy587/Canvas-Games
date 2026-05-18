@@ -3,36 +3,37 @@ package merge_balls
 import utils.Action
 import utils.GameEnvironment
 
-class Environment: GameEnvironment() {
-    private val spriteGrid = SpriteGrid(10, 10)
+class Environment(
+    private val view: MergeBallsView,
+    private val spriteGrid: SpriteGrid
+) : GameEnvironment() {
+    private val gridSize = 10
+    private val currentBox: Box = getRandomBox()
 
     override fun repaint() {
-        println("\n=== Sprites ===")
-        for ((index, sprite) in spriteList.withIndex()) {
-            println("Sprite $index: Position(${sprite.x}, ${sprite.y}) Velocity(${sprite.vx}, ${sprite.vy}) Acceleration(${sprite.ax}, ${sprite.ay})")
-        }
+        view.refresh()
     }
 
     override fun onAction(action: Action) {
-        TODO("Not yet implemented")
+        TODO("Implement Movements")
     }
 
     override fun update(deltaTime: Float) {
         super.update(deltaTime)
         syncGridToSpriteList()
-        addRandomBox()
     }
 
-    fun addRandomBox() {
-        val randomX = (Math.random() * 10).toInt()
-        val randomY = (Math.random() * 10).toInt()
+    private fun getRandomBox(): Box {
+        val randomX = (Math.random() * gridSize).toInt()
+        val randomY = (Math.random() * gridSize).toInt()
         val box = Box(x = randomX.toFloat(), y = randomY.toFloat(), value = 2)
         if (spriteGrid.place(box, randomX, randomY)) {
             addSprite(box)
         }
+        return box
     }
 
-    fun syncGridToSpriteList() {
+    private fun syncGridToSpriteList() {
         spriteList.clear()
         spriteList.addAll(spriteGrid.getAllSprites())
     }
