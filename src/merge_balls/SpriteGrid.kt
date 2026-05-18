@@ -1,11 +1,21 @@
 package merge_balls
 
-class SpriteGrid(val width: Int = 10, val height: Int = 10) {
-    private val grid: Array<Array<Box?>> = Array(width) { Array(height) { null } }
+import utils.Grid
+
+class SpriteGrid(override val width: Int = 10, override val height: Int = 10) : Grid<Box> {
+    private val grid: Array<Array<Box?>> = Array(width) { arrayOfNulls<Box>(height) }
+
+    override fun set(gx: Int, gy: Int, box: Box?): Boolean {
+        if (isValidCell(gx, gy)) {
+            grid[gx][gy] = box
+            return true
+        }
+        return false
+    }
 
     fun place(box: Box, gx: Int, gy: Int): Boolean {
         if (isValidCell(gx, gy) && grid[gx][gy] == null) {
-            grid[gx][gy] = box
+            set(gx, gy, box)
             box.x = gx.toFloat()
             box.y = gy.toFloat()
             return true
@@ -17,7 +27,7 @@ class SpriteGrid(val width: Int = 10, val height: Int = 10) {
         return grid[gx][gy].also { grid[gx][gy] = null }
     }
 
-    fun get(gx: Int, gy: Int): Box? {
+    override fun get(gx: Int, gy: Int): Box? {
         return if (isValidCell(gx, gy)) grid[gx][gy] else null
     }
 
@@ -48,7 +58,7 @@ class SpriteGrid(val width: Int = 10, val height: Int = 10) {
         return sprites
     }
 
-    fun clear() {
+    override fun clear() {
         for (x in 0..<width) {
             for (y in 0..<height) {
                 grid[x][y] = null
@@ -56,7 +66,7 @@ class SpriteGrid(val width: Int = 10, val height: Int = 10) {
         }
     }
 
-    fun isValidCell(gx: Int, gy: Int): Boolean {
+    override fun isValidCell(gx: Int, gy: Int): Boolean {
         return gx in 0..<width && gy in 0..<height
     }
 }

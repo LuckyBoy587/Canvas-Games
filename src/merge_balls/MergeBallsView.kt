@@ -48,8 +48,8 @@ class GridCanvas(
         }
 
         // Draw sprites
-        for (x in 0..<gridSize) {
-            for (y in 0..<gridSize) {
+        for (x in 0..<spriteGrid.width) {
+            for (y in 0..<spriteGrid.height) {
                 spriteGrid.get(x, y)?.let { sprite ->
                     drawSprite(g2d, sprite, x, y)
                 }

@@ -2,6 +2,7 @@ package merge_balls
 
 import utils.ActionQueue
 import utils.Clock
+import utils.GameOverException
 import utils.KeyboardHandler
 
 fun main() {
@@ -15,6 +16,11 @@ fun main() {
     view.setKeyListener(keyboardHandler)
     
     // Start the game loop
-    val clock = Clock(game, actionQueue)
-    clock.start()
+    val clock = Clock(game, actionQueue, keyboardHandler::tick)
+    try {
+        clock.start()
+    } catch (e: GameOverException) {
+        println(e.message)
+        clock.stop()
+    }
 }
