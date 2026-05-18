@@ -2,12 +2,15 @@ package utils
 
 class Clock(
     private val gameEnvironment: GameEnvironment,
-    private val actionRetriever: ActionRetriever
+    private val actionRetriever: ActionRetriever,
+    private val onTick: ((Float) -> Unit)? = null,
+    var gravityInterval: Float = 1.0f // seconds
 ) {
     private var fps = 60
     private var frameTime = 1000f / fps
     private var lastTime = System.nanoTime()
     private var isRunning = true
+    private var gravityAccumulator = 0f
 
     fun start() {
         while (isRunning) {
@@ -16,6 +19,16 @@ class Clock(
             
             if (elapsedTimeMs >= frameTime) {
                 val deltaTime = elapsedTimeMs / 1000f
+                
+                onTick?.invoke(deltaTime)
+                
+                if (gravityInterval > 0) {
+                    gravityAccumulator += deltaTime
+                    if (gravityAccumulator >= gravityInterval) {
+                        gameEnvironment.onAction(Action.MOVE_DOWN)
+                        gravityAccumulator -= gravityInterval
+                    }
+                }
                 
                 // Process all queued actions before updating game state
                 while (actionRetriever.hasActions()) {

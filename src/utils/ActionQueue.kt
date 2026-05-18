@@ -1,10 +1,9 @@
 package utils
 
-import java.util.LinkedList
-import java.util.Queue
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class ActionQueue: ActionBuffer, ActionRetriever {
-    private val actions: Queue<Action> = LinkedList()
+    private val actions = ConcurrentLinkedQueue<Action>()
 
     override fun addAction(action: Action) {
         actions.add(action)
@@ -15,9 +14,6 @@ class ActionQueue: ActionBuffer, ActionRetriever {
     }
 
     override fun getAction(): Action {
-        if (actions.isEmpty()) {
-            throw NoSuchElementException("No actions available")
-        }
-        return actions.poll()
+        return actions.poll() ?: throw NoSuchElementException("No actions available")
     }
 }
