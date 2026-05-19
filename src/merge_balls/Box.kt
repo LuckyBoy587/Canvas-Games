@@ -10,6 +10,7 @@ enum class BoxState {
 
 class Box(override var x: Float, override var y: Float, val value: Int): Sprite() {
     var state: BoxState = BoxState.CONTROLLED
+    var scale: Float = 1.0f
     
     override val color = when (value) {
         2 -> java.awt.Color(0xeee4da)

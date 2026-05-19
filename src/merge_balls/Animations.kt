@@ -1,7 +1,6 @@
 package merge_balls
 
 import utils.Animation
-import kotlin.math.abs
 import kotlin.math.sqrt
 
 class MergeAnimation(
@@ -11,7 +10,7 @@ class MergeAnimation(
     private val newValue: Int,
     private val grid: SpriteGrid,
     private val spriteList: MutableList<utils.Sprite>,
-    private val onAnimationFinished: () -> Unit
+    private val onAnimationFinished: (Box) -> Unit
 ) : Animation {
     private val speed = 15f
     override var isFinished = false
@@ -53,7 +52,7 @@ class MergeAnimation(
         grid.place(mergedBox, targetX, targetY)
         spriteList.add(mergedBox)
         
-        onAnimationFinished()
+        onAnimationFinished(mergedBox)
     }
 }
 
@@ -109,6 +108,32 @@ class WaitAnimation(
         elapsed += deltaTime
         if (elapsed >= duration) {
             isFinished = true
+        }
+    }
+
+    override fun onComplete() {
+        onAnimationFinished()
+    }
+}
+
+class PopAnimation(
+    private val box: Box,
+    private val onAnimationFinished: () -> Unit
+) : Animation {
+    private val duration = 0.15f // 150 milliseconds
+    private var elapsed = 0f
+    override var isFinished = false
+
+    override fun update(deltaTime: Float) {
+        elapsed += deltaTime
+        if (elapsed >= duration) {
+            box.scale = 1.0f
+            isFinished = true
+        } else {
+            val progress = elapsed / duration
+            // Sine wave to go 1.0 -> 1.3 -> 1.0
+            val scaleOffset = kotlin.math.sin(progress * Math.PI).toFloat() * 0.3f
+            box.scale = 1.0f + scaleOffset
         }
     }
 

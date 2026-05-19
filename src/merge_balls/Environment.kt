@@ -91,8 +91,17 @@ class Environment(
             checkStableState()
         }
 
+        val ghostX = currentBox.x.toInt()
+        val ghostY = if (currentBox.state == BoxState.CONTROLLED || currentBox.state == BoxState.FALLING) {
+            val ly = spriteGrid.getLandingY(ghostX, currentBox.y.toInt())
+            if (ly > currentBox.y.toInt()) ly else null
+        } else {
+            null
+        }
+        val ghostValue = if (ghostY != null) currentBox.value else null
+
         syncSpriteListToGrid()
-        view.updateSprites(spriteList.filterIsInstance<Box>(), isGameOver = isGameOver)
+        view.updateSprites(spriteList.filterIsInstance<Box>(), isGameOver = isGameOver, ghostX = ghostX, ghostY = ghostY, ghostValue = ghostValue)
     }
 
     private fun checkStableState() {
@@ -101,9 +110,11 @@ class Environment(
         val merges = spriteGrid.checkMerges(currentBox.x.toInt(), currentBox.y.toInt())
         if (merges.isNotEmpty()) {
             val event = merges[0] // Handle one merge event at a time for simplicity and better visual
-            animator.play(MergeAnimation(event.boxes, event.targetX, event.targetY, event.newValue, spriteGrid, spriteList) {
-                animator.play(WaitAnimation(0.1f) {
-                    checkStableState()
+            animator.play(MergeAnimation(event.boxes, event.targetX, event.targetY, event.newValue, spriteGrid, spriteList) { mergedBox ->
+                animator.play(PopAnimation(mergedBox) {
+                    animator.play(WaitAnimation(0.1f) {
+                        checkStableState()
+                    })
                 })
             })
             return
