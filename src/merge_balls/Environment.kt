@@ -90,7 +90,7 @@ class Environment(
         if (merges.isNotEmpty()) {
             val event = merges[0] // Handle one merge event at a time for simplicity and better visual
             animator.play(MergeAnimation(event.boxes, event.targetX, event.targetY, event.newValue, spriteGrid, spriteList) {
-                animator.play(WaitAnimation(0.25f) {
+                animator.play(WaitAnimation(0.1f) {
                     checkStableState()
                 })
             })
@@ -100,7 +100,7 @@ class Environment(
         val gravityEvents = spriteGrid.checkGravity()
         if (gravityEvents.isNotEmpty()) {
             animator.play(GravityAnimation(gravityEvents, spriteGrid) {
-                animator.play(WaitAnimation(0.25f) {
+                animator.play(WaitAnimation(0.1f) {
                     checkStableState()
                 })
             })
@@ -129,7 +129,8 @@ class Environment(
 
         if (attempts >= 100) throw GameOverException()
 
-        val box = Box(x = randomX.toFloat(), y = 0f, value = 2)
+        val value = if (Math.random() < 0.75) 2 else 4
+        val box = Box(x = randomX.toFloat(), y = 0f, value = value)
         box.state = BoxState.CONTROLLED
         addSprite(box)
         // Note: We don't add to spriteGrid yet, it will be synced in update

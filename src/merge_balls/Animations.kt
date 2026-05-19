@@ -2,6 +2,7 @@ package merge_balls
 
 import utils.Animation
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 class MergeAnimation(
     private val boxes: List<Box>,
@@ -20,7 +21,7 @@ class MergeAnimation(
         for (box in boxes) {
             val dx = targetX.toFloat() - box.x
             val dy = targetY.toFloat() - box.y
-            val dist = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
+            val dist = sqrt((dx * dx + dy * dy).toDouble()).toFloat()
 
             if (dist < 0.1f) {
                 box.x = targetX.toFloat()
