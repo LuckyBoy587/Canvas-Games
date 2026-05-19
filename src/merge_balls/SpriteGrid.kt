@@ -45,6 +45,13 @@ class SpriteGrid(override val width: Int = 10, override val height: Int = 10) : 
         return events
     }
 
+    fun getLandingY(x: Int, startY: Int): Int {
+        var targetY = startY
+        while (targetY + 1 < height && get(x, targetY + 1) == null) {
+            targetY++
+        }
+        return targetY
+    }
 
     fun checkGravity(): List<GravityEvent> {
         val events = mutableListOf<GravityEvent>()
