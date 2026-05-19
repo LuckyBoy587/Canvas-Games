@@ -21,7 +21,7 @@ class Environment(
                 dropY++
             }
             currentBox.y = dropY.toFloat()
-            if (dropY == 0) throw GameOverException()
+            checkGameOver()
             currentBox = getRandomBox()
             return
         }
@@ -41,6 +41,7 @@ class Environment(
                 currentBox.y = nextY.toFloat()
             } else if (action == Action.MOVE_DOWN) {
                 // If gravity/move down fails, it has landed
+                checkGameOver()
                 currentBox = getRandomBox()
             }
         }
@@ -49,6 +50,12 @@ class Environment(
     override fun update(deltaTime: Float) {
         super.update(deltaTime)
         syncSpriteListToGrid()
+    }
+
+    private fun checkGameOver() {
+        if (currentBox.y.toInt() == 0) {
+            throw GameOverException()
+        }
     }
 
     private fun getRandomBox(): Box {

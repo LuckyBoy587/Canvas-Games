@@ -5,15 +5,14 @@ import java.awt.*
 
 class MergeBallsView(
     spriteGrid: SpriteGrid,
-    gridSize: Int = 10,
     cellSize: Int = 60,
     padding: Int = 10
 ) : GameView(
     "Merge Balls",
-    gridSize * cellSize + padding * 2 + 16,
-    gridSize * cellSize + padding * 2 + 39
+    spriteGrid.width * cellSize + padding * 2 + 16,
+    spriteGrid.height * cellSize + padding * 2 + 39
 ) {
-    override val canvas: GridCanvas = GridCanvas(spriteGrid, gridSize, cellSize, padding)
+    override val canvas: GridCanvas = GridCanvas(spriteGrid, cellSize, padding)
     
     init {
         setupUI()
@@ -22,7 +21,6 @@ class MergeBallsView(
 
 class GridCanvas(
     private val spriteGrid: SpriteGrid,
-    private val gridSize: Int,
     private val cellSize: Int,
     private val padding: Int
 ) : javax.swing.JPanel() {
@@ -34,17 +32,22 @@ class GridCanvas(
 
         // Draw grid background
         g2d.color = Color(187, 173, 160)
-        g2d.fillRect(padding, padding, gridSize * cellSize, gridSize * cellSize)
+        g2d.fillRect(padding, padding, spriteGrid.width * cellSize, spriteGrid.height * cellSize)
 
         // Draw grid lines
         g2d.color = Color(149, 136, 134)
         g2d.stroke = BasicStroke(2f)
-        for (i in 0..gridSize) {
+        
+        // Vertical lines
+        for (i in 0..spriteGrid.width) {
             val pos = padding + i * cellSize
-            // Vertical lines
-            g2d.drawLine(pos, padding, pos, padding + gridSize * cellSize)
-            // Horizontal lines
-            g2d.drawLine(padding, pos, padding + gridSize * cellSize, pos)
+            g2d.drawLine(pos, padding, pos, padding + spriteGrid.height * cellSize)
+        }
+        
+        // Horizontal lines
+        for (i in 0..spriteGrid.height) {
+            val pos = padding + i * cellSize
+            g2d.drawLine(padding, pos, padding + spriteGrid.width * cellSize, pos)
         }
 
         // Draw sprites

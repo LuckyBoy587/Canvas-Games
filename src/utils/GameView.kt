@@ -12,7 +12,6 @@ abstract class GameView(
     protected val frame: JFrame = JFrame(title).apply {
         defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         isResizable = false
-        setLocationRelativeTo(null)
     }
     
     protected abstract val canvas: JPanel
@@ -20,6 +19,7 @@ abstract class GameView(
     protected fun setupUI() {
         frame.add(canvas)
         frame.setSize(width, height)
+        frame.setLocationRelativeTo(null)
         frame.isVisible = true
     }
     

@@ -5,9 +5,9 @@ import utils.Grid
 class SpriteGrid(override val width: Int = 10, override val height: Int = 10) : Grid<Box> {
     private val grid: Array<Array<Box?>> = Array(width) { arrayOfNulls<Box>(height) }
 
-    override fun set(gx: Int, gy: Int, box: Box?): Boolean {
+    override fun set(gx: Int, gy: Int, value: Box?): Boolean {
         if (isValidCell(gx, gy)) {
-            grid[gx][gy] = box
+            grid[gx][gy] = value
             return true
         }
         return false
