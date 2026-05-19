@@ -17,6 +17,10 @@ class MergeBallsView(
     init {
         setupUI()
     }
+
+    fun updateSprites(sprites: List<Box>) {
+        canvas.sprites = sprites
+    }
 }
 
 class GridCanvas(
@@ -24,6 +28,7 @@ class GridCanvas(
     private val cellSize: Int,
     private val padding: Int
 ) : javax.swing.JPanel() {
+    var sprites: List<Box> = listOf()
 
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
@@ -50,29 +55,25 @@ class GridCanvas(
             g2d.drawLine(padding, pos, padding + spriteGrid.width * cellSize, pos)
         }
 
-        // Draw sprites
-        for (x in 0..<spriteGrid.width) {
-            for (y in 0..<spriteGrid.height) {
-                spriteGrid.get(x, y)?.let { sprite ->
-                    drawSprite(g2d, sprite, x, y)
-                }
-            }
+        // Draw sprites from the list
+        sprites.forEach { sprite ->
+            drawSprite(g2d, sprite)
         }
     }
 
-    private fun drawSprite(g: Graphics2D, sprite: Box, gridX: Int, gridY: Int) {
-        val x = padding + gridX * cellSize + 2
-        val y = padding + gridY * cellSize + 2
+    private fun drawSprite(g: Graphics2D, sprite: Box) {
+        val x = padding + sprite.x * cellSize + 2
+        val y = padding + sprite.y * cellSize + 2
         val size = cellSize - 4
 
         // Draw box with rounded corners
         g.color = sprite.color
-        g.fillRoundRect(x, y, size, size, 6, 6)
+        g.fillRoundRect(x.toInt(), y.toInt(), size, size, 6, 6)
 
         // Draw border
         g.color = Color.BLACK
         g.stroke = BasicStroke(1f)
-        g.drawRoundRect(x, y, size, size, 6, 6)
+        g.drawRoundRect(x.toInt(), y.toInt(), size, size, 6, 6)
 
         // Draw value text
         g.color = if (sprite.value >= 8) Color.WHITE else Color.BLACK
@@ -81,6 +82,6 @@ class GridCanvas(
         val fm = g.fontMetrics
         val textX = x + (size - fm.stringWidth(sprite.value.toString())) / 2
         val textY = y + ((size - fm.height) / 2) + fm.ascent
-        g.drawString(sprite.value.toString(), textX, textY)
+        g.drawString(sprite.value.toString(), textX.toInt(), textY.toInt())
     }
 }

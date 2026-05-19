@@ -48,16 +48,6 @@ class SpriteGrid(override val width: Int = 10, override val height: Int = 10) : 
         return adjacent
     }
 
-    fun getAllSprites(): List<Box> {
-        val sprites = mutableListOf<Box>()
-        for (x in 0..<width) {
-            for (y in 0..<height) {
-                grid[x][y]?.let { sprites.add(it) }
-            }
-        }
-        return sprites
-    }
-
     override fun clear() {
         for (x in 0..<width) {
             for (y in 0..<height) {
