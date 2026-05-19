@@ -18,6 +18,7 @@ class KeyboardHandler(
             KeyEvent.VK_S to Action.MOVE_DOWN,
             KeyEvent.VK_DOWN to Action.MOVE_DOWN,
             KeyEvent.VK_SPACE to Action.DROP,
+            KeyEvent.VK_R to Action.RESTART,
         )
     }
 
@@ -35,8 +36,8 @@ class KeyboardHandler(
 
             val action = keyMap[keyCode] ?: continue
 
-            // DROP action should not repeat on hold
-            if (action == Action.DROP) continue
+            // DROP and RESTART actions should not repeat on hold
+            if (action == Action.DROP || action == Action.RESTART) continue
 
             // Check if we have passed the initial threshold
             if (totalHoldTime * 1000f >= holdThreshold) {

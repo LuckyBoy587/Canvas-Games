@@ -25,4 +25,8 @@ class SequentialAnimator {
             }
         }
     }
+
+    fun clear() {
+        queue.clear()
+    }
 }

@@ -2,13 +2,13 @@ package merge_balls
 
 import utils.Action
 import utils.GameEnvironment
-import utils.GameOverException
 import utils.SequentialAnimator
 
 class Environment(
     private val view: MergeBallsView,
     private val spriteGrid: SpriteGrid
 ) : GameEnvironment() {
+    private var isGameOver = false
     private var currentBox: Box = getRandomBox()
     private val fallingSpeed = 15f
     private val animator = SequentialAnimator()
@@ -18,6 +18,11 @@ class Environment(
     }
 
     override fun onAction(action: Action) {
+        if (action == Action.RESTART) {
+            restart()
+            return
+        }
+        if (isGameOver) return
         if (animator.isAnimating) return
         if (currentBox.state != BoxState.CONTROLLED) return
 
@@ -31,6 +36,7 @@ class Environment(
             Action.MOVE_DOWN -> 0 to 1
             Action.MOVE_LEFT -> -1 to 0
             Action.MOVE_RIGHT -> 1 to 0
+            else -> 0 to 0
         }
 
         if (dx != 0 || dy != 0) {
@@ -49,9 +55,14 @@ class Environment(
     }
 
     override fun update(deltaTime: Float) {
+        if (isGameOver) {
+            view.updateSprites(spriteList.filterIsInstance<Box>(), isGameOver = true)
+            return
+        }
+
         if (animator.isAnimating) {
             animator.update(deltaTime)
-            view.updateSprites(spriteList.filterIsInstance<Box>())
+            view.updateSprites(spriteList.filterIsInstance<Box>(), isGameOver = false)
             return
         }
 
@@ -81,10 +92,11 @@ class Environment(
         }
 
         syncSpriteListToGrid()
-        view.updateSprites(spriteList.filterIsInstance<Box>())
+        view.updateSprites(spriteList.filterIsInstance<Box>(), isGameOver = isGameOver)
     }
 
     private fun checkStableState() {
+        if (isGameOver) return
         syncSpriteListToGrid()
         val merges = spriteGrid.checkMerges(currentBox.x.toInt(), currentBox.y.toInt())
         if (merges.isNotEmpty()) {
@@ -115,7 +127,7 @@ class Environment(
 
     private fun checkGameOver(landedBox: Box) {
         if (landedBox.y.toInt() == 0) {
-            throw GameOverException()
+            isGameOver = true
         }
     }
 
@@ -127,7 +139,10 @@ class Environment(
             attempts++
         } while (spriteGrid.get(randomX, 0) != null && attempts < 100)
 
-        if (attempts >= 100) throw GameOverException()
+        if (attempts >= 100) {
+            isGameOver = true
+            return Box(0f, 0f, 2)
+        }
 
         val value = if (Math.random() < 0.75) 2 else 4
         val box = Box(x = randomX.toFloat(), y = 0f, value = value)
@@ -135,6 +150,15 @@ class Environment(
         addSprite(box)
         // Note: We don't add to spriteGrid yet, it will be synced in update
         return box
+    }
+
+    private fun restart() {
+        isGameOver = false
+        spriteGrid.clear()
+        spriteList.clear()
+        animator.clear()
+        currentBox = getRandomBox()
+        view.updateSprites(spriteList.filterIsInstance<Box>(), isGameOver = false)
     }
 
     private fun syncSpriteListToGrid() {

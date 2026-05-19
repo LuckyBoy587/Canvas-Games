@@ -18,8 +18,9 @@ class MergeBallsView(
         setupUI()
     }
 
-    fun updateSprites(sprites: List<Box>) {
+    fun updateSprites(sprites: List<Box>, isGameOver: Boolean = false) {
         canvas.sprites = sprites
+        canvas.isGameOver = isGameOver
     }
 }
 
@@ -29,6 +30,7 @@ class GridCanvas(
     private val padding: Int
 ) : javax.swing.JPanel() {
     var sprites: List<Box> = listOf()
+    var isGameOver: Boolean = false
 
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
@@ -59,6 +61,40 @@ class GridCanvas(
         sprites.forEach { sprite ->
             drawSprite(g2d, sprite)
         }
+
+        // Draw Game Over overlay if game is over
+        if (isGameOver) {
+            drawGameOverOverlay(g2d)
+        }
+    }
+
+    private fun drawGameOverOverlay(g: Graphics2D) {
+        val width = spriteGrid.width * cellSize
+        val height = spriteGrid.height * cellSize
+
+        // Translucent black overlay
+        g.color = Color(0, 0, 0, 180)
+        g.fillRect(padding, padding, width, height)
+
+        // "GAME OVER" Text
+        val font = Font("Arial", Font.BOLD, 36)
+        g.font = font
+        g.color = Color(246, 94, 59)
+        val fm = g.fontMetrics
+        val text = "GAME OVER"
+        val textX = padding + (width - fm.stringWidth(text)) / 2
+        val textY = padding + height / 2 - 10
+        g.drawString(text, textX, textY)
+
+        // "Press R to Restart" Text
+        val subFont = Font("Arial", Font.PLAIN, 16)
+        g.font = subFont
+        g.color = Color.WHITE
+        val subFm = g.fontMetrics
+        val subText = "Press R to Restart"
+        val subTextX = padding + (width - subFm.stringWidth(subText)) / 2
+        val subTextY = textY + subFm.height + 20
+        g.drawString(subText, subTextX, subTextY)
     }
 
     private fun drawSprite(g: Graphics2D, sprite: Box) {
