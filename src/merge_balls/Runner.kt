@@ -6,7 +6,7 @@ import utils.GameOverException
 import utils.KeyboardHandler
 
 fun main() {
-    val spriteGrid = SpriteGrid(6, 10)
+    val spriteGrid = SpriteGrid(6, 7)
     val view = MergeBallsView(spriteGrid)
     val game = Environment(view, spriteGrid)
     val actionQueue = ActionQueue()
