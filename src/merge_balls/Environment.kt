@@ -140,7 +140,24 @@ class Environment(
         val merges = spriteGrid.checkMerges(currentBox.x.toInt(), currentBox.y.toInt())
         if (merges.isNotEmpty()) {
             val event = merges[0] // Handle one merge event at a time for simplicity and better visual
-            animator.play(MergeAnimation(event.boxes, event.targetX, event.targetY, event.newValue, spriteGrid, spriteList) { mergedBox ->
+            
+            // Remove merging boxes from grid immediately before they start moving
+            for (box in event.boxes) {
+                spriteGrid.remove(box.x.toInt(), box.y.toInt())
+            }
+
+            animator.play(MergeAnimation(event.boxes, event.targetX, event.targetY) {
+                // Remove old boxes from sprite list
+                for (box in event.boxes) {
+                    spriteList.remove(box)
+                }
+
+                // Add new box
+                val mergedBox = Box(event.targetX.toFloat(), event.targetY.toFloat(), event.newValue)
+                mergedBox.state = BoxState.LOCKED
+                spriteGrid.place(mergedBox, event.targetX, event.targetY)
+                spriteList.add(mergedBox)
+
                 score += event.newValue
                 if (score > bestScore) {
                     bestScore = score
@@ -156,7 +173,15 @@ class Environment(
 
         val gravityEvents = spriteGrid.checkGravity()
         if (gravityEvents.isNotEmpty()) {
-            animator.play(GravityAnimation(gravityEvents, spriteGrid) {
+            // Remove boxes from their old positions in grid immediately to avoid collisions during check
+            for (event in gravityEvents) {
+                spriteGrid.remove(event.box.x.toInt(), event.box.y.toInt())
+            }
+            animator.play(GravityAnimation(gravityEvents) {
+                // Place boxes in their new positions in grid
+                for (event in gravityEvents) {
+                    spriteGrid.set(event.box.x.toInt(), event.targetY, event.box)
+                }
                 animator.play(WaitAnimation(0.1f) {
                     checkStableState()
                 })

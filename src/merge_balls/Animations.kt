@@ -7,10 +7,7 @@ class MergeAnimation(
     private val boxes: List<Box>,
     private val targetX: Int,
     private val targetY: Int,
-    private val newValue: Int,
-    private val grid: SpriteGrid,
-    private val spriteList: MutableList<utils.Sprite>,
-    private val onAnimationFinished: (Box) -> Unit
+    private val onAnimationFinished: () -> Unit
 ) : Animation {
     private val speed = 15f
     override var isFinished = false
@@ -41,35 +38,16 @@ class MergeAnimation(
     }
 
     override fun onComplete() {
-        // Remove old boxes from grid and sprite list
-        for (box in boxes) {
-            grid.remove(box.x.toInt(), box.y.toInt())
-            spriteList.remove(box)
-        }
-        // Add new box
-        val mergedBox = Box(targetX.toFloat(), targetY.toFloat(), newValue)
-        mergedBox.state = BoxState.LOCKED
-        grid.place(mergedBox, targetX, targetY)
-        spriteList.add(mergedBox)
-        
-        onAnimationFinished(mergedBox)
+        onAnimationFinished()
     }
 }
 
 class GravityAnimation(
     private val events: List<GravityEvent>,
-    private val grid: SpriteGrid,
     private val onAnimationFinished: () -> Unit
 ) : Animation {
     private val speed = 15f
     override var isFinished = false
-
-    init {
-        // Remove boxes from their old positions in grid immediately to avoid collisions during check
-        for (event in events) {
-            grid.remove(event.box.x.toInt(), event.box.y.toInt())
-        }
-    }
 
     override fun update(deltaTime: Float) {
         var allReached = true
@@ -89,10 +67,6 @@ class GravityAnimation(
     }
 
     override fun onComplete() {
-        // Place boxes in their new positions in grid
-        for (event in events) {
-            grid.set(event.box.x.toInt(), event.targetY, event.box)
-        }
         onAnimationFinished()
     }
 }
