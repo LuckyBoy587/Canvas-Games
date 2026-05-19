@@ -1,9 +1,79 @@
 package merge_balls
 
 import utils.Grid
+import kotlin.math.pow
+
+data class MergeEvent(val boxes: List<Box>, val targetX: Int, val targetY: Int, val newValue: Int)
+data class GravityEvent(val box: Box, val targetY: Int)
 
 class SpriteGrid(override val width: Int = 10, override val height: Int = 10) : Grid<Box> {
-    private val grid: Array<Array<Box?>> = Array(width) { arrayOfNulls<Box>(height) }
+    private val grid: Array<Array<Box?>> = Array(width) { arrayOfNulls(height) }
+
+    fun checkMerges(lastX: Int, lastY: Int): List<MergeEvent> {
+        val events = mutableListOf<MergeEvent>()
+        val visited = Array(width) { BooleanArray(height) }
+
+        for (x in 0..<width) {
+            for (y in 0..<height) {
+                val box = get(x, y)
+                if (box != null && !visited[x][y]) {
+                    val island = mutableListOf<Pair<Int, Int>>()
+                    findIsland(x, y, box.value, island, visited)
+
+                    if (island.size > 1) {
+                        val boxes = island.map { (ix, iy) -> get(ix, iy)!! }
+
+                        // Decide final merging cell:
+                        // 1. Lowest in grid (max Y)
+                        // 2. Closest to lastX, lastY
+                        // 3. One on left (min X)
+                        val target = island.sortedWith(compareByDescending<Pair<Int, Int>> { it.second }
+                            .thenBy { (ix, iy) -> 
+                                val dx = ix - lastX
+                                val dy = iy - lastY
+                                dx * dx + dy * dy
+                            }
+                            .thenBy { it.first }
+                        ).first()
+
+                        val newValue = box.value * 2.0.pow(island.size - 1).toInt()
+                        events.add(MergeEvent(boxes, target.first, target.second, newValue))
+                    }
+                }
+            }
+        }
+        return events
+    }
+
+
+    fun checkGravity(): List<GravityEvent> {
+        val events = mutableListOf<GravityEvent>()
+        for (x in 0..<width) {
+            var nextEmptyY = height - 1
+            for (y in height - 1 downTo 0) {
+                val box = get(x, y)
+                if (box != null) {
+                    if (y != nextEmptyY) {
+                        events.add(GravityEvent(box, nextEmptyY))
+                    }
+                    nextEmptyY--
+                }
+            }
+        }
+        return events
+    }
+
+    private fun findIsland(x: Int, y: Int, targetValue: Int, island: MutableList<Pair<Int, Int>>, visited: Array<BooleanArray>) {
+        visited[x][y] = true
+        island.add(Pair(x, y))
+
+        for ((nx, ny) in getAdjacentCells(x, y)) {
+            val neighbor = get(nx, ny)
+            if (neighbor != null && neighbor.value == targetValue && !visited[nx][ny]) {
+                findIsland(nx, ny, targetValue, island, visited)
+            }
+        }
+    }
 
     override fun set(gx: Int, gy: Int, value: Box?): Boolean {
         if (isValidCell(gx, gy)) {

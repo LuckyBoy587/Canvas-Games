@@ -3,6 +3,7 @@ package merge_balls
 import utils.Action
 import utils.GameEnvironment
 import utils.GameOverException
+import utils.SequentialAnimator
 
 class Environment(
     private val view: MergeBallsView,
@@ -10,12 +11,14 @@ class Environment(
 ) : GameEnvironment() {
     private var currentBox: Box = getRandomBox()
     private val fallingSpeed = 15f
+    private val animator = SequentialAnimator()
 
     override fun repaint() {
         view.refresh()
     }
 
     override fun onAction(action: Action) {
+        if (animator.isAnimating) return
         if (currentBox.state != BoxState.CONTROLLED) return
 
         if (action == Action.DROP) {
@@ -40,15 +43,22 @@ class Environment(
             } else if (action == Action.MOVE_DOWN) {
                 currentBox.state = BoxState.LOCKED
                 checkGameOver(currentBox)
-                currentBox = getRandomBox()
+                checkStableState()
             }
         }
     }
 
     override fun update(deltaTime: Float) {
+        if (animator.isAnimating) {
+            animator.update(deltaTime)
+            view.updateSprites(spriteList.filterIsInstance<Box>())
+            return
+        }
+
         super.update(deltaTime)
         
         // Handle falling boxes and collisions
+        var landed = false
         val boxes = spriteList.filterIsInstance<Box>()
         boxes.forEach { box ->
             if (box.state == BoxState.FALLING) {
@@ -59,17 +69,48 @@ class Environment(
                         box.y = (nextGridY - 1).toFloat()
                         box.vy = 0f
                         box.state = BoxState.LOCKED
+                        landed = true
                         checkGameOver(box)
-                        if (box == currentBox) {
-                            currentBox = getRandomBox()
-                        }
                     }
                 }
             }
         }
 
+        if (landed) {
+            checkStableState()
+        }
+
         syncSpriteListToGrid()
-        view.updateSprites(boxes)
+        view.updateSprites(spriteList.filterIsInstance<Box>())
+    }
+
+    private fun checkStableState() {
+        syncSpriteListToGrid()
+        val merges = spriteGrid.checkMerges(currentBox.x.toInt(), currentBox.y.toInt())
+        if (merges.isNotEmpty()) {
+            val event = merges[0] // Handle one merge event at a time for simplicity and better visual
+            animator.play(MergeAnimation(event.boxes, event.targetX, event.targetY, event.newValue, spriteGrid, spriteList) {
+                animator.play(WaitAnimation(0.25f) {
+                    checkStableState()
+                })
+            })
+            return
+        }
+
+        val gravityEvents = spriteGrid.checkGravity()
+        if (gravityEvents.isNotEmpty()) {
+            animator.play(GravityAnimation(gravityEvents, spriteGrid) {
+                animator.play(WaitAnimation(0.25f) {
+                    checkStableState()
+                })
+            })
+            return
+        }
+
+        // If we reach here, board is stable
+        if (currentBox.state == BoxState.LOCKED) {
+            currentBox = getRandomBox()
+        }
     }
 
     private fun checkGameOver(landedBox: Box) {
