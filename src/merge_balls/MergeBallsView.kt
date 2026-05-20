@@ -25,6 +25,7 @@ class MergeBallsView(
         ghostX: Int? = null, 
         ghostY: Int? = null, 
         ghostValue: Int? = null,
+        particles: List<Particle> = listOf(),
         nextValue: Int = 2,
         score: Int = 0,
         bestScore: Int = 0
@@ -34,6 +35,7 @@ class MergeBallsView(
         canvas.ghostX = ghostX
         canvas.ghostY = ghostY
         canvas.ghostValue = ghostValue
+        canvas.particles = particles
         canvas.nextValue = nextValue
         canvas.score = score
         canvas.bestScore = bestScore
@@ -52,6 +54,7 @@ class GridCanvas(
     var ghostX: Int? = null
     var ghostY: Int? = null
     var ghostValue: Int? = null
+    var particles: List<Particle> = listOf()
     var nextValue: Int = 2
     var score: Int = 0
     var bestScore: Int = 0
@@ -84,6 +87,11 @@ class GridCanvas(
         // Draw sprites from the list
         sprites.forEach { sprite ->
             drawSprite(g2d, sprite)
+        }
+
+        // Draw particles on top of the sprites
+        particles.forEach { particle ->
+            drawParticle(g2d, particle)
         }
 
         // Draw Ghost projection if coordinates are present
@@ -346,5 +354,29 @@ class GridCanvas(
         val textX = x + (size - fm.stringWidth(sprite.value.toString())) / 2
         val textY = y + ((size - fm.height) / 2) + fm.ascent
         g.drawString(sprite.value.toString(), textX.toInt(), textY.toInt())
+    }
+
+    private fun drawParticle(g: Graphics2D, particle: Particle) {
+        val alpha = (particle.life / particle.maxLife).coerceIn(0f, 1f)
+        val size = cellSize * particle.initialSize * alpha
+        if (size <= 0.1f) return
+
+        // Compute screen coordinates for particle center
+        val px = padding + particle.x * cellSize
+        val py = padding + particle.y * cellSize
+
+        val originalComposite = g.composite
+        g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
+        g.color = particle.color
+
+        // Draw particle as a beautiful anti-aliased oval
+        g.fillOval(
+            (px - size / 2).toInt(),
+            (py - size / 2).toInt(),
+            size.toInt(),
+            size.toInt()
+        )
+
+        g.composite = originalComposite
     }
 }

@@ -7,6 +7,7 @@ class MergeAnimation(
     private val boxes: List<Box>,
     private val targetX: Int,
     private val targetY: Int,
+    private val emitParticle: (Particle) -> Unit,
     private val onAnimationFinished: () -> Unit
 ) : Animation {
     private val speed = 15f
@@ -24,13 +25,37 @@ class MergeAnimation(
                 box.y = targetY.toFloat()
             } else {
                 val step = speed * deltaTime
+                val ux = dx / dist
+                val uy = dy / dist
+
                 if (step >= dist) {
                     box.x = targetX.toFloat()
                     box.y = targetY.toFloat()
                 } else {
-                    box.x += (dx / dist) * step
-                    box.y += (dy / dist) * step
+                    box.x += ux * step
+                    box.y += uy * step
                     allReached = false
+                }
+
+                // Emit beautiful organic trail particles flowing backward relative to the travel direction
+                if (Math.random() < 0.6) {
+                    val spawnX = box.x + 0.5f
+                    val spawnY = box.y + 0.5f
+                    val backSpeed = 2f + Math.random().toFloat() * 2f
+                    val vx = -ux * backSpeed + (Math.random().toFloat() - 0.5f) * 1.5f
+                    val vy = -uy * backSpeed + (Math.random().toFloat() - 0.5f) * 1.5f
+
+                    emitParticle(Particle(
+                        x = spawnX,
+                        y = spawnY,
+                        vx = vx,
+                        vy = vy,
+                        ax = 0f,
+                        ay = -1f, // light upward thermal drift
+                        color = box.color,
+                        maxLife = 0.25f + Math.random().toFloat() * 0.2f,
+                        initialSize = 0.08f + Math.random().toFloat() * 0.06f
+                    ))
                 }
             }
         }
